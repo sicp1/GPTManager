@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.14/vue.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>主节点</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 200px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #e84118;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        textarea {
+            width: 400px;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid #e84118;
+            border-radius: 10px;
+            font-size: 18px;
+            resize: none;
+        }
+        button {
+            background-color: #e84118;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            width: 150px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c23616;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+<div class="container">
+    <h1>主节点</h1>
+    <input type="text" placeholder="请输入主节点的url(ip:port)" v-model="URL">
+    <br>
+    <br>
+    <div class="input-box">
+        <input type="text" placeholder="添加apikey" v-model="apikey">
+        <button @click="AppendApiKey">添加</button>
+    </div>
+    <button @click="Init">初始化</button>
+    <br>
+    <br>
+    <br>
+    <button @click="AllocateAPIKEY">分配apikey</button>
+    <div class="input-box">
+        <input type="text" placeholder="请给予chatgpt身份(system)" v-model="system">
+        <button @click="SetSystem">提交</button>
+        </div>
+    <br>
+    <div class="input-box">
+        <input type="text" placeholder="请填写prompt" v-model="prompt">
+        <button @click="Setprompt">提交</button>
+    </div>
+<br>
+    <div class="input-box">
+        <textarea placeholder="向gpt提问" v-model="chat"></textarea>
+        <button @click="StartCHAT">提问</button>
+    </div>
+    <br>
+    <h4>{{chat_res}}</h4>
+    <br>
+    <button @click="CreateApi">生成api</button>
+    <h2>API:{{api_}}</h2>
+</div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            apikey:"",system:"",URL:"",api_:"",
+            chat:"",chat_res:"",prompt:""
+
+        },methods:{
+            Setprompt(){
+                var self=this
+                var setprompt_formdata=new FormData()
+                setprompt_formdata.append("prompt",this.prompt)
+                $.ajax({
+                    url: 'http://'+self.URL+"/Setprompt",
+                    type: 'POST',
+                    data:setprompt_formdata,
+                    contentType : false,
+                    processData : false,
+                    success: function (response) {
+alert("prompt设置成功")
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+            },
+            StartCHAT(){
+                var self=this
+                var startchat_formdata=new FormData()
+                startchat_formdata.append("str_user",this.chat)
+                $.ajax({
+                    url: 'http://'+self.URL+"/StartCHAT",
+                    type: 'POST',
+                    data:startchat_formdata,
+                    contentType : false,
+                    processData : false,
+                    success: function (response) {
+                        self.chat_res=response
+
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+            },
+
+
+            CreateApi(){
+                var self=this
+                var createapi_formdata=new FormData()
+                createapi_formdata.append("URL",this.URL)
+                $.ajax({
+                    url: 'http://'+self.URL+"/CreateApi",
+                    type: 'POST',
+                    data:createapi_formdata,
+                    contentType : false,
+                    processData : false,
+                    success: function (response) {
+                        alert("api生成成功")
+                        self.api_=response
+
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+
+            },
+            SetSystem(){
+                var self=this
+                var system_formdata=new FormData();
+                system_formdata.append("System",this.system)
+                $.ajax({
+                    url: 'http://'+self.URL+"/SetSystem",
+                    type: 'POST',
+                    data:system_formdata,
+                    contentType : false,
+                    processData : false,
+                    success: function (response) {
+                        alert("chatgpt身份设置成功(system设置成功)")
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+            },
+            AllocateAPIKEY(){
+                var self =this
+                $.ajax({
+                    url: 'http://'+self.URL+"/AllocateAPIKEY",
+                    type: 'GET',
+                    success: function (response) {
+                        alert("分配成功")
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+            },
+            Init(){
+                var self=this
+                $.ajax({
+                    url: 'http://'+self.URL+"/Init",
+                    type: 'GET',
+                    success: function (response) {
+                        alert("初始化成功")
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+            },
+            AppendApiKey(){
+                var self=this
+               var  apikey_formdata=new FormData();
+               apikey_formdata.append("ApiKey",this.apikey)
+                $.ajax({
+                    url: 'http://'+self.URL+"/AppendApiKey",
+                    type: 'POST',
+                    data: apikey_formdata ,
+                    contentType : false,
+                    processData : false,
+                    success: function (response) {
+                   alert("添加成功")
+                    },
+                    error: function (xhr, status, error) {
+                        alert("error")
+                    }
+                });
+
+
+            }
+
+
+        }
+
+    })
+</script>
+</body>
+</html>
